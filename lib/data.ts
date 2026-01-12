@@ -59,6 +59,12 @@ export async function getHotelLinks(hotelId: string): Promise<Link[]> {
     .select('*')
     .eq('hotel_id', hotelId)
     .eq('is_active', true)
+    // Filter out contact links from the main list if we want them separate, 
+    // or we can fetch all and filter in memory. The UI splits them.
+    // Based on Page logic: LinksSection "Servicios del Hotel" uses getHotelLinks
+    // and LinksSection "Contacto" uses getContactLinks.
+    // So getHotelLinks should probably NOT include 'contact'.
+    .neq('category', 'contact')
     .order('order_index')
 
   if (!links) return []
@@ -66,16 +72,34 @@ export async function getHotelLinks(hotelId: string): Promise<Link[]> {
   return links.map((link: any) => ({
     id: link.id,
     title: link.title,
-    description: '', // Schema doesn't have description for links yet, can add later
+    description: link.description || '',
     url: link.url,
-    icon: '🔗', // Default icon
-    category: 'hotel',
+    icon: link.icon || 'Link',
+    category: link.category,
+    priority: link.order_index,
   }))
 }
 
 export async function getContactLinks(hotelId: string): Promise<Link[]> {
-  // Fetch hotel again to get contact info... or just pass hotel object. 
-  // For efficiency, we should pass the hotel object, but for now we'll fetch.
-  // Actually, let's just return nothing or mock contacts derived from hotel data if validation allows.
-  return []
+  const supabase = await createClient()
+
+  const { data: links } = await supabase
+    .from('links')
+    .select('*')
+    .eq('hotel_id', hotelId)
+    .eq('category', 'contact')
+    .eq('is_active', true)
+    .order('order_index')
+
+  if (!links) return []
+
+  return links.map((link: any) => ({
+    id: link.id,
+    title: link.title,
+    description: link.description || '',
+    url: link.url,
+    icon: link.icon || 'Phone',
+    category: 'contact',
+    priority: link.order_index,
+  }))
 }
