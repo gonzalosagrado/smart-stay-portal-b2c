@@ -2,8 +2,22 @@
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { ExternalLink, Copy, Check } from 'lucide-react'
+import { ExternalLink, Copy, Check, Wifi, Phone, Link as LinkIcon, Instagram, Facebook, Mail, MapPin, Utensils, Car, Ticket, Globe } from 'lucide-react'
 import { Link } from '@/types/portal'
+
+const IconMap: Record<string, any> = {
+  Wifi,
+  Phone,
+  Link: LinkIcon,
+  Instagram,
+  Facebook,
+  Mail,
+  MapPin,
+  Utensils,
+  Car,
+  Ticket,
+  Globe
+}
 
 export function LinkCard({ link }: { link: Link }) {
   const isExternal = link.url.startsWith('http') || link.url.startsWith('mailto:') || link.url.startsWith('tel:')
@@ -28,6 +42,8 @@ export function LinkCard({ link }: { link: Link }) {
       type: 'button' as const
     }
 
+  const IconComponent = typeof link.icon === 'string' ? IconMap[link.icon] : null
+
   return (
     <Container
       {...containerProps}
@@ -36,8 +52,8 @@ export function LinkCard({ link }: { link: Link }) {
       className="flex items-center justify-between p-4 bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow min-h-[44px] w-full text-left"
     >
       <div className="flex items-center gap-3 flex-1">
-        <span className="text-2xl flex-shrink-0" aria-hidden="true">
-          {link.icon}
+        <span className="text-2xl flex-shrink-0 text-blue-600" aria-hidden="true">
+          {IconComponent ? <IconComponent className="w-6 h-6" /> : link.icon}
         </span>
         <div className="flex-1 min-w-0">
           <p className="font-medium text-gray-900 truncate">
